@@ -22,3 +22,6 @@ dev_dependencies:
   test: ^1.24.3
   very_good_analysis: ^5.1.0
 
+flutter:
+  assets:
+    - test/dummy.pdf
