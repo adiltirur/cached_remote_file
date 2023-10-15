@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cached_remote_file/cached_remote_file.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/file.dart' as file;
@@ -88,7 +86,8 @@ void main() {
         },
       );
 
-      // Assert that the progress callback was called and that the last percentage value is not null
+      // Assert that the progress callback was called and
+      //that the last percentage value is not null
       expect(lastPercentage, isNotNull);
     });
 
