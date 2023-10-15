@@ -22,7 +22,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final mockClient = MockClient(); // Mock the http client
   final mockCacheManager = MockBaseCacheManager(); // Mock the cache manager
-  final crClient =
+  final remoteClient =
       CachedRemoteFile(httpClient: mockClient, cacheManager: mockCacheManager);
 
   group('download file from Internet', () {
@@ -40,7 +40,7 @@ void main() {
 
     test('Download Complete', () async {
       // Expect the download to complete successfully
-      expect(await crClient.get('https://example.com'), isA<Uint8List>());
+      expect(await remoteClient.get('https://example.com'), isA<Uint8List>());
     });
 
     test('Complete with an error when an error occurs', () async {
@@ -50,7 +50,7 @@ void main() {
 
       // Expect the download to fail with the expected error message
       try {
-        await crClient.get('https://example.com');
+        await remoteClient.get('https://example.com');
         fail('Expected error was not thrown');
       } catch (e) {
         expect(e, isA<Exception>());
@@ -63,7 +63,7 @@ void main() {
       final headers = {'Authorization': 'Bearer Token'};
 
       // Expect the request to be made with the provided headers
-      await crClient.get('https://example.com', headers: headers);
+      await remoteClient.get('https://example.com', headers: headers);
 
       verify(
         mockClient.send(
@@ -81,7 +81,7 @@ void main() {
       double? lastPercentage;
 
       // Download the file with a progress callback
-      await crClient.get(
+      await remoteClient.get(
         'https://example.com',
         downloadProgress: (percentage) {
           lastPercentage = percentage;
@@ -94,8 +94,8 @@ void main() {
 
     test('HttpClient and CacheManager Initialization', () {
       // Assert that the HttpClient and CacheManager are not null
-      expect(crClient.httpClient, isNotNull);
-      expect(crClient.cacheManager, isNotNull);
+      expect(remoteClient.httpClient, isNotNull);
+      expect(remoteClient.cacheManager, isNotNull);
     });
   });
 }
