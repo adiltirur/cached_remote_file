@@ -1,5 +1,5 @@
 name: cached_remote_file
-description: A simple package to download and cache file from internet
+description: A simple package to download and cache file from internet, this package uses flutter cache manager for caching and http package for downloading
 repository: https://github.com/adiltirur/cached_remote_file
 issue_tracker: https://github.com/adiltirur/cached_remote_file/issues
 version: 1.0.0
