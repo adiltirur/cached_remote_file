@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 /// A callback function that is called when the download progress changes.
 ///
 /// The parameter `percentage` is the download percentage, from 0 to 100.
-typedef CachedRemoteFileDownloadProgress = void Function(double percentage);
+typedef CRFProgressValue = void Function(double percentage);
 
 /// A class for fetching remote files and caching them locally.
 ///
@@ -49,13 +49,12 @@ class CachedRemoteFile {
   ///
   /// Returns a [Future] that completes with the downloaded file as a
   /// [Uint8List].
-  Future<Uint8List> get(
+  Future<Uint8List?> get(
     String url, {
     Map<String, String>? headers,
-    CachedRemoteFileDownloadProgress? downloadProgress,
+    CRFProgressValue? downloadProgressValue,
     bool force = false,
     String method = 'GET',
-    bool debug = false,
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final completer = Completer<Uint8List>();
@@ -68,8 +67,12 @@ class CachedRemoteFile {
     }
 
     if (!force && fileInfo != null && isFileInCash) {
-      completer.complete(Uint8List.fromList(await fileInfo.file.readAsBytes()));
-      return completer.future;
+      try {
+        final bytes = await fileInfo.file.readAsBytes();
+        completer.complete(Uint8List.fromList(bytes));
+      } catch (error) {
+        completer.completeError(error);
+      }
     } else {
       final request = http.Request(method, Uri.parse(url));
       if (headers != null) {
@@ -79,19 +82,24 @@ class CachedRemoteFile {
       var receivedLength = 0;
 
       try {
-        final response = await httpClient.send(request);
-        response.stream.listen(
-          (List<int> chunk) {
-            receivedLength += chunk.length;
-            final contentLength = request.contentLength;
-            final percentage = receivedLength / contentLength * 100;
-            downloadProgress?.call(percentage);
-            bytesList.addAll(chunk);
-          },
-          onDone: () async {
-            final bytes = Uint8List.fromList(bytesList);
-            await cacheManager.putFile(url, bytes);
-            completer.complete(bytes);
+        final response = httpClient.send(request).timeout(timeout);
+        response.asStream().listen(
+          (http.StreamedResponse request) {
+            request.stream.listen(
+              (List<int> chunk) {
+                receivedLength += chunk.length;
+                final contentLength = request.contentLength ?? receivedLength;
+                final percentage = receivedLength / contentLength;
+                downloadProgressValue?.call(percentage);
+                bytesList.addAll(chunk);
+              },
+              onDone: () async {
+                final bytes = Uint8List.fromList(bytesList);
+                await cacheManager.putFile(url, bytes);
+                completer.complete(bytes);
+              },
+              onError: completer.completeError,
+            );
           },
           onError: completer.completeError,
         );
@@ -100,5 +108,6 @@ class CachedRemoteFile {
       }
       return completer.future;
     }
+    return null;
   }
 }
