@@ -2,7 +2,7 @@ name: cached_remote_file
 description: CachedRemoteFile is a Flutter package for efficient remote file fetching and local caching, enhancing performance and reducing data usage.
 repository: https://github.com/adiltirur/cached_remote_file
 issue_tracker: https://github.com/adiltirur/cached_remote_file/issues
-version: 1.0.11
+version: 1.0.12
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

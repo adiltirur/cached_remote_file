@@ -1,7 +1,14 @@
+# Change Log
+
+## 1.0.12
+
+* Updated documentation
+
 ## 1.0.11
+
 * Added Examples
 * Added More test
-* Added Codecov to CI
+* Added codecov to CI
 
 ## 1.0.1
 
@@ -9,4 +16,4 @@
 
 ## 1.0.0
 
-* Initial release.
+* Initial release
