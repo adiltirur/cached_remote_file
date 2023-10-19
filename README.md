@@ -6,51 +6,77 @@
 [![codecov](https://codecov.io/gh/adiltirur/cached_remote_file/graph/badge.svg?token=X02CV3C8U8)](https://codecov.io/gh/adiltirur/cached_remote_file)
 [![Release Workflow](https://github.com/adiltirur/cached_remote_file/actions/workflows/main.yaml/badge.svg)](https://github.com/adiltirur/cached_remote_file/actions/workflows/main.yaml)
 
-A simple package to download and cache file from internet
+`CachedRemoteFile` is a Flutter package for fetching remote files and caching them locally. It allows you to download files from the internet and store them locally, enhancing performance and reducing data usage. 
+This Package is inspired by [internet_file][internet_file]
 
-## Installation 💻
-
-**❗ In order to start using Cached Remote File you must have the [Flutter SDK][flutter_install_link] installed on your machine.**
+## Installation
 
 Install via `flutter pub add`:
 
 ```sh
 dart pub add cached_remote_file
 ```
+Then, run `flutter pub get` to fetch the package.
 
 ---
 
-## Continuous Integration 🤖
-
-Cached Remote File comes with a built-in [GitHub Actions workflow][github_actions_link] powered by [Very Good Workflows][very_good_workflows_link] but you can also add your preferred CI/CD solution.
-
-Out of the box, on each pull request and push, the CI `formats`, `lints`, and `tests` the code. This ensures the code remains consistent and behaves correctly as you add functionality or make changes. The project uses [Very Good Analysis][very_good_analysis_link] for a strict set of analysis options used by our team. Code coverage is enforced using the [Very Good Workflows][very_good_coverage_link].
-
----
-
-## Running Tests 🧪
-
-For first time users, install the [very_good_cli][very_good_cli_link]:
+## Usage
+Import the package and create an instance of `CachedRemoteFile` to start fetching and caching remote files.
 
 ```sh
-dart pub global activate very_good_cli
-```
 
-To run all unit tests:
+import 'package:cached_remote_file/cached_remote_file.dart';
+
+// Create a CachedRemoteFile instance
+final cachedRemoteFile = CachedRemoteFile();
+
+// Fetch a remote file and store it locally
+final url = 'https://example.com/your-remote-file.txt';
+
+try {
+  final fileData = await cachedRemoteFile.get(url);
+  if (fileData != null) {
+    // Handle the downloaded file data (Uint8List)
+  }
+} catch (e) {
+  // Handle errors
+}
+
+```
+You can customize the behavior of the get method by providing optional parameters, such as headers, progress callbacks, and more.
+
 
 ```sh
-very_good test --coverage
+
+// Example with optional parameters
+final url = 'https://example.com/your-remote-file.txt';
+final headers = {'Authorization': 'Bearer your_access_token'};
+
+try {
+  final fileData = await cachedRemoteFile.get(
+    url,
+    headers: headers,
+    force: false,
+    method: 'GET',
+    timeout: const Duration(seconds: 30),
+    downloadProgressValue: (double percentage) {
+      // Handle download progress
+    },
+  );
+  if (fileData != null) {
+    // Handle the downloaded file data (Uint8List)
+  }
+} catch (e) {
+  // Handle errors
+}
+
 ```
 
-To view the generated coverage report you can use [lcov](https://github.com/linux-test-project/lcov).
+## Documentation
+For detailed information on the package and its classes, please refer to the [Dart documentation][dart-api-doc].
 
-```sh
-# Generate Coverage Report
-genhtml coverage/lcov.info -o coverage/
-
-# Open Coverage Report
-open coverage/index.html
-```
+## License
+This package is distributed under the MIT License. See the [LICENSE][license] file for more details.
 
 [flutter_install_link]: https://docs.flutter.dev/get-started/install
 [github_actions_link]: https://docs.github.com/en/actions/learn-github-actions
@@ -64,6 +90,9 @@ open coverage/index.html
 [very_good_analysis_link]: https://pub.dev/packages/very_good_analysis
 [very_good_cli_link]: https://pub.dev/packages/very_good_cli
 [very_good_coverage_link]: https://github.com/marketplace/actions/very-good-coverage
+[internet_file]: https://pub.dev/packages/internet_file
+[dart-api-doc]: https://pub.dev/documentation/cached_remote_file/latest/
+[license]: https://github.com/adiltirur/cached_remote_file/blob/master/LICENSE
 [very_good_ventures_link]: https://verygood.ventures
 [very_good_ventures_link_light]: https://verygood.ventures#gh-light-mode-only
 [very_good_ventures_link_dark]: https://verygood.ventures#gh-dark-mode-only
