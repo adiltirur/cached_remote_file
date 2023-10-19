@@ -9,7 +9,12 @@ import 'package:mockito/mockito.dart';
 
 import 'cached_remote_file_test.mocks.dart';
 
-@GenerateMocks([http.Client, BaseCacheManager, FileInfo, file.File])
+@GenerateMocks([
+  http.Client,
+  BaseCacheManager,
+  FileInfo,
+  file.File,
+])
 Future<Uint8List> getPdfBytes() async {
   final data = await rootBundle.load('test/dummy.pdf');
   final bytes = data.buffer.asUint8List();
@@ -81,7 +86,7 @@ void main() {
       // Download the file with a progress callback
       await remoteClient.get(
         'https://example.com',
-        downloadProgress: (percentage) {
+        downloadProgressValue: (percentage) {
           lastPercentage = percentage;
         },
       );
@@ -92,9 +97,10 @@ void main() {
     });
 
     test('HttpClient and CacheManager Initialization', () {
-      // Assert that the HttpClient and CacheManager are not null
-      expect(remoteClient.httpClient, isNotNull);
-      expect(remoteClient.cacheManager, isNotNull);
+      final remoteClient = CachedRemoteFile();
+
+      expect(remoteClient.cacheManager, isA<BaseCacheManager>());
+      expect(remoteClient.httpClient, isA<http.Client>());
     });
   });
 }
