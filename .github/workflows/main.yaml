@@ -2,7 +2,9 @@ name: Release Workflow
 
 on:
   push:
-    branches: [master]
+    tags:
+      - 'release*'
+      
 jobs:
   build:
     runs-on: ubuntu-latest
