@@ -2,8 +2,7 @@ name: Release Workflow
 
 on:
   push:
-    tags:
-      - 'release*'
+    branches: [master]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,14 +23,12 @@ jobs:
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --coverage
         
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-
 
       - name: Format code
         run: dart format --fix .
