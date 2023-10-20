@@ -49,7 +49,7 @@ class CachedRemoteFile {
   ///
   /// Returns a [Future] that completes with the downloaded file as a
   /// [Uint8List].
-  Future<Uint8List?> get(
+  Future<Uint8List> get(
     String url, {
     Map<String, String>? headers,
     CRFProgressValue? downloadProgressValue,
@@ -67,12 +67,9 @@ class CachedRemoteFile {
     }
 
     if (!force && fileInfo != null && isFileInCash) {
-      try {
-        final bytes = await fileInfo.file.readAsBytes();
-        completer.complete(Uint8List.fromList(bytes));
-      } catch (error) {
-        completer.completeError(error);
-      }
+      final bytes = await fileInfo.file.readAsBytes();
+      completer.complete(Uint8List.fromList(bytes));
+      return completer.future;
     } else {
       final request = http.Request(method, Uri.parse(url));
       if (headers != null) {
@@ -108,6 +105,5 @@ class CachedRemoteFile {
       }
       return completer.future;
     }
-    return null;
   }
 }
