@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.14
+
+* Added debouncer
+
 ## 1.0.13
 
 * Minor Fix to return Uint8List instead of Uint8List?
