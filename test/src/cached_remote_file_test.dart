@@ -1,4 +1,5 @@
 import 'package:cached_remote_file/cached_remote_file.dart';
+import 'package:cached_remote_file/src/debouncer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/file.dart' as file;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -102,5 +103,16 @@ void main() {
       expect(remoteClient.cacheManager, isA<BaseCacheManager>());
       expect(remoteClient.httpClient, isA<http.Client>());
     });
+  });
+  test('Debouncer should delay function execution', () async {
+    final debouncer = Debouncer(delay: const Duration(milliseconds: 300));
+    var executionCount = 0;
+
+    debouncer.debounce(() {
+      executionCount++;
+    });
+    expect(executionCount, 0);
+    await Future.delayed(const Duration(milliseconds: 400), () {});
+    expect(executionCount, 1);
   });
 }
