@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:cached_remote_file/src/debouncer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,12 +19,19 @@ class CachedRemoteFile {
   /// [cacheManager] is used for caching downloaded files. If not provided, it
   /// defaults to [DefaultCacheManager].
   ///
+  /// [debouncer] is used for debouncing requests to prevent excessive
+  /// concurrent requests. It can be customized with a specific debouncing
+  /// delay to control how often requests are made.
+  ///
   /// [httpClient] is used for making HTTP requests. If not provided,
   /// it defaults to [http.Client].
   CachedRemoteFile({
     BaseCacheManager? cacheManager,
+    Debouncer? debouncer,
     http.Client? httpClient,
   })  : cacheManager = cacheManager ?? DefaultCacheManager(),
+        debouncer =
+            debouncer ?? Debouncer(delay: const Duration(milliseconds: 800)),
         httpClient = httpClient ?? http.Client();
 
   /// The cache manager used for caching downloaded files.
@@ -31,6 +39,10 @@ class CachedRemoteFile {
 
   /// The HTTP client used for making HTTP requests.
   final http.Client httpClient;
+
+  /// The debouncer used to control request frequency and prevent excessive
+  /// concurrent requests.
+  final Debouncer debouncer;
 
   /// Fetches a remote file from the specified [url].
   ///
@@ -58,52 +70,52 @@ class CachedRemoteFile {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final completer = Completer<Uint8List>();
-    final fileInfo = await cacheManager.getFileFromCache(url);
-    bool isFileInCash;
-    try {
-      isFileInCash = fileInfo?.file.existsSync() ?? false;
-    } catch (e) {
-      isFileInCash = false;
-    }
-
-    if (!force && fileInfo != null && isFileInCash) {
-      final bytes = await fileInfo.file.readAsBytes();
-      completer.complete(Uint8List.fromList(bytes));
-      return completer.future;
-    } else {
-      final request = http.Request(method, Uri.parse(url));
-      if (headers != null) {
-        request.headers.addAll(headers);
-      }
-      final bytesList = <int>[];
-      var receivedLength = 0;
-
+    debouncer.debounce(() async {
+      final fileInfo = await cacheManager.getFileFromCache(url);
+      bool isFileInCash;
       try {
-        final response = httpClient.send(request).timeout(timeout);
-        response.asStream().listen(
-          (http.StreamedResponse request) {
-            request.stream.listen(
-              (List<int> chunk) {
-                receivedLength += chunk.length;
-                final contentLength = request.contentLength ?? receivedLength;
-                final percentage = receivedLength / contentLength;
-                downloadProgressValue?.call(percentage);
-                bytesList.addAll(chunk);
-              },
-              onDone: () async {
-                final bytes = Uint8List.fromList(bytesList);
-                await cacheManager.putFile(url, bytes);
-                completer.complete(bytes);
-              },
-              onError: completer.completeError,
-            );
-          },
-          onError: completer.completeError,
-        );
-      } catch (error) {
-        completer.completeError(error);
+        isFileInCash = fileInfo?.file.existsSync() ?? false;
+      } catch (e) {
+        isFileInCash = false;
       }
-      return completer.future;
-    }
+      if (!force && fileInfo != null && isFileInCash) {
+        final bytes = await fileInfo.file.readAsBytes();
+        completer.complete(Uint8List.fromList(bytes));
+      } else {
+        final request = http.Request(method, Uri.parse(url));
+        if (headers != null) {
+          request.headers.addAll(headers);
+        }
+        final bytesList = <int>[];
+        var receivedLength = 0;
+
+        try {
+          final response = httpClient.send(request).timeout(timeout);
+          response.asStream().listen(
+            (http.StreamedResponse request) {
+              request.stream.listen(
+                (List<int> chunk) {
+                  receivedLength += chunk.length;
+                  final contentLength = request.contentLength ?? receivedLength;
+                  final percentage = receivedLength / contentLength;
+                  downloadProgressValue?.call(percentage);
+                  bytesList.addAll(chunk);
+                },
+                onDone: () async {
+                  final bytes = Uint8List.fromList(bytesList);
+                  await cacheManager.putFile(url, bytes);
+                  completer.complete(bytes);
+                },
+                onError: completer.completeError,
+              );
+            },
+            onError: completer.completeError,
+          );
+        } catch (error) {
+          completer.completeError(error);
+        }
+      }
+    });
+    return completer.future;
   }
 }
