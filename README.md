@@ -7,6 +7,7 @@
 [![Release Workflow](https://github.com/adiltirur/cached_remote_file/actions/workflows/main.yaml/badge.svg)](https://github.com/adiltirur/cached_remote_file/actions/workflows/main.yaml)
 
 `CachedRemoteFile` is a Flutter package for fetching remote files and caching them locally. It allows you to download files from the internet and store them locally, enhancing performance and reducing data usage. 
+This Package also contains a debouncer class
 This Package is inspired by [internet_file][internet_file]
 
 ## Installation
