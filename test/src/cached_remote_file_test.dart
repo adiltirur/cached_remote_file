@@ -29,6 +29,57 @@ void main() {
   final remoteClient =
       CachedRemoteFile(httpClient: mockClient, cacheManager: mockCacheManager);
 
+  group('Debouncer', () {
+    test('debounce calls callback after delay', () async {
+      // Create a Debouncer with a short delay
+      final debouncer = Debouncer(delay: const Duration(milliseconds: 100));
+
+      // Create a variable to store the execution count of the callback
+      var executionCount = 0;
+
+      // Call debounce with a callback function
+      debouncer.debounce(() {
+        executionCount++;
+      });
+
+      // Expect the execution count to be 0 before the delay
+      expect(executionCount, 0);
+
+      // Wait for a duration slightly longer than the debouncer's delay
+      await Future.delayed(const Duration(milliseconds: 150), () {});
+
+      // Expect the execution count to be 1 after the delay
+      expect(executionCount, 1);
+    });
+
+    test('debounce cancels previous calls', () async {
+      // Create a Debouncer with a longer delay
+      final debouncer = Debouncer(delay: const Duration(milliseconds: 200));
+
+      // Create a variable to store the execution count of the callback
+      var executionCount = 0;
+
+      // Call debounce with a callback function
+      debouncer
+        ..debounce(() {
+          executionCount++;
+        })
+
+        // Call debounce again before the first delay completes
+        ..debounce(() {
+          executionCount++;
+        });
+
+      // Expect the execution count to be 0 before the delay
+      expect(executionCount, 0);
+
+      // Wait for a duration slightly longer than the debouncer's delay
+      await Future.delayed(const Duration(milliseconds: 250), () {});
+
+      // Expect the execution count to be 1 after the delay
+      expect(executionCount, 1);
+    });
+  });
   group('download file from Internet', () {
     setUp(() async {
       final dummyPDF = await getPdfBytes();
@@ -96,23 +147,12 @@ void main() {
       //that the last percentage value is not null
       expect(lastPercentage, isNotNull);
     });
-
-    test('HttpClient and CacheManager Initialization', () {
+    test('HttpClient and CacheManager Initialization', () async {
       final remoteClient = CachedRemoteFile();
 
       expect(remoteClient.cacheManager, isA<BaseCacheManager>());
+      expect(remoteClient.debouncer, isA<Debouncer>());
       expect(remoteClient.httpClient, isA<http.Client>());
     });
-  });
-  test('Debouncer should delay function execution', () async {
-    final debouncer = Debouncer(delay: const Duration(milliseconds: 300));
-    var executionCount = 0;
-
-    debouncer.debounce(() {
-      executionCount++;
-    });
-    expect(executionCount, 0);
-    await Future.delayed(const Duration(milliseconds: 400), () {});
-    expect(executionCount, 1);
   });
 }
